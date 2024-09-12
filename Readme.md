@@ -2,6 +2,7 @@
 # Small Language Model Project
 
 This project demonstrates different approaches to working with small language models for specific NLP tasks. It includes implementations using Hugging Face Transformers, a distributed system with Kafka, and scripts for pre-training models.
+The main objective is to test different alternatives to avoid training LLMs, in order to have a much more efficient way of deploying small individual machines that can outperform in certain tasks collaborating all together to analyze complex problems
 
 ## Project Structure
 
