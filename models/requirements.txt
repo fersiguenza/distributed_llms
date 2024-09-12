@@ -1,0 +1,14 @@
+torch
+transformers
+datasets
+scikit-learn
+numpy
+pandas
+matplotlib
+seaborn
+tqdm
+optuna
+wandb
+accelerate
+sentence-transformers 
+scikit-learn

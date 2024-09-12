@@ -1,0 +1,99 @@
+version: '3.9'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - 9092:9092
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--list", "--bootstrap-server", "localhost:9092"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CREATE_TOPICS: "prompts_to_analyze:1:1,nlp_tasks:1:1,nlp_results:1:1"
+
+  prompt_analyzer:
+    build:
+      context: ./distributed_system/prompt_analyzer
+      dockerfile: Dockerfile
+    depends_on:
+     kafka:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      KAFKA_BROKER: kafka:29092
+
+  sentiment_analyzer:
+    build:
+      context: ./distributed_system/sentiment_analyzer
+      dockerfile: Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      KAFKA_BROKER: kafka:29092
+
+  question_answerer:
+    build:
+      context: ./distributed_system/question_answerer
+      dockerfile: Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      KAFKA_BROKER: kafka:29092
+
+  huggingface_transformer:
+    build:
+      context: ./hugging_face_transformer
+      dockerfile: Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      KAFKA_BROKER: kafka:29092
+
+    volumes:
+      - ./models:/app/models
+
+  api_gateway:
+    build:
+      context: ./api_gateway
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      KAFKA_BROKER: kafka:29092
+
+  web_interface:
+    build:
+      context: ./web_interface
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./web_interface:/usr/share/nginx/html
+    depends_on:
+      - api_gateway

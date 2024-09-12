@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Processor</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Prompt Processor</h1>
+        <div class="mode-toggle">
+            <span>Distributed</span>
+            <label class="switch">
+                <input type="checkbox" id="mode-toggle">
+                <span class="slider round"></span>
+            </label>
+            <span>Hugging Face Transformer</span>
+        </div>
+        <textarea id="promptInput" rows="4" placeholder="Enter your prompt here..."></textarea>
+        <button onclick="submitPrompt()" id="submitButton">Submit</button>
+        <div id="result">
+            <h2>Result:</h2>
+            <p id="status"></p>
+            <p id="taskType"></p>
+            <p id="response"></p>
+        </div>
+    </div>
+    <script src="./script.js"></script>
+</body>
+</html>
